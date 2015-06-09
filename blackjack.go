@@ -1,45 +1,88 @@
 package main
 
 import (
+	//"encoding/json"
 	"fmt"
 	"github.com/fzzy/radix/redis"
-	"html/template"
-	"net/http"
+	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
+	//"github.com/martini-contrib/staticbin"
+	"math/rand"
 	"os"
-	"reflect"
+	//"reflect"
+	//"github.com/jteeuwen/go-bindata"
 	"time"
 )
 
 var redisClnet *redis.Client
 
 // Object
+type Poker struct {
+	Cards [][2]string
+	count int
+}
 type User struct {
 	Name  string
 	Money int
+	Cards *Poker
+	Card  [][2]string
 }
-type Poker struct {
-	cards [][2]string
-	count int
+type Player struct {
+	User
 }
-type Card struct {
+type Dealer struct {
+	User
 }
 
 // init
 func init() {
-
+	redisClnet = initRedis()
 }
 
 // main
 func main() {
-	redisClnet = initRedis()
-	settingSave("hello", "world3")
-	s := settingLoad("hello")
-	fmt.Println("mykey0:", s)
-	p := &Poker{}
-	p.create()
-	fmt.Println(p.cards)
-	http.HandleFunc("/", helloHandler)
-	http.ListenAndServe(":7890", nil)
+	m := martini.Classic()
+	m.Use(martini.Static("assets"))
+	m.Use(render.Renderer(render.Options{
+		Directory:  "views",
+		Layout:     "layouts/application",
+		Extensions: []string{".tmpl", ".html"},
+	}))
+	m.Get("/", WebHome)
+
+	m.Group("/rooms", func(r martini.Router) {
+		//r.Get("/", IndexRooms)
+		//r.Get("/:id", GetRoom)
+		r.Get("/new", NewRoom)
+		//r.Post("/", CreateRoom)
+		//r.Put("/update/:id", UpdateRoom)
+		//r.Delete("/delete/:id", DeleteRoom)
+	})
+	m.Run()
+}
+
+// Web
+func WebHome(r render.Render) {
+	//rooms := redisClnet.
+	r.HTML(200, "rooms/index", nil)
+}
+func NewRoom(r render.Render) {
+
+	r.HTML(200, "rooms/new", nil)
+}
+func CreateRoom(r render.Render) {
+
+}
+func GetRoom(r render.Render) {
+
+}
+
+// Game in progress
+func deal_first(d *Dealer, p *Player) {
+	d.get_card()
+	p.get_card()
+	d.get_card()
+	p.get_card()
 }
 
 // function
@@ -50,37 +93,41 @@ func errHndlr(err error) {
 	}
 }
 
-// Web
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Path[len("/"):]
-	u1 := &User{Name: "test", Money: 500}
-	u1.re_name(name)
-	t, _ := template.ParseFiles("html/index.html")
-	t.Execute(w, u1)
-}
-
 // Object method
 //// User
-func (u *User) re_name(name string) string {
-	u.Name = name
-	return u.Name
+
+func (u *User) get_card() {
+	u.Card = append(u.Card, u.Cards.pop())
 }
 
-func (u *User) get_card() bool {
-	return true
+func (u *User) set_cards() {
+
 }
 
 //// Poker
-func (p *Poker) create() {
+func (p *Poker) create(number int) {
 	suit := [4]string{"diamonds", "spades", "clubs", "hearts"}
 	value := [13]string{"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}
-	for _, i := range suit {
-		for _, j := range value {
-			p.cards = append(p.cards, [2]string{i, j})
+	for i := 0; i <= number; i++ {
+		for _, i := range suit {
+			for _, j := range value {
+				p.Cards = append(p.Cards, [2]string{i, j})
+			}
 		}
 	}
-	fmt.Println(len(p.cards))
-	fmt.Println(reflect.TypeOf(p.cards))
+	p.shuffle()
+}
+func (p *Poker) shuffle() {
+	rand.Seed(time.Now().UnixNano())
+	for i := range p.Cards {
+		j := rand.Intn(i + 1)
+		p.Cards[i], p.Cards[j] = p.Cards[j], p.Cards[i]
+	}
+}
+func (p *Poker) pop() [2]string {
+	card := p.Cards[len(p.Cards)-1:][0]
+	p.Cards = p.Cards[:len(p.Cards)-1]
+	return card
 }
 
 // Redis

@@ -1,0 +1,7 @@
+log/
+tmp/
+*.DS_Store
+.DS_Store
+public/uploads/
+public/avatars/
+public/favicon.ico

@@ -1,0 +1,50 @@
+<h1>Hi</h1>
+<div class="container" >
+<div id="rooms">
+</div>
+</div>
+<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+<script>
+  var socket = new io.connect('http://10.50.2.78:8080', {
+    'reconnection': true,
+    'reconnectionDelay': 1000,
+    'reconnectionDelayMax' : 5000,
+    'reconnectionAttempts': 5
+  });
+  var new_room = function(room){
+    div = $('<div />').attr({
+      "data-id": room.id
+    });
+    div.append($('<h2 />').text(room.name)).append($('<p />').text(room.people+"/"+room.limit))
+    $('div#rooms').append(div)
+  }
+  var update_room = function(room){
+    r = $('[data-id='+room.id+']');
+    r.find('h2').text(room.name);
+    r.find('p').text(room.people+"/"+room.limit)
+  }
+  var del_room = function(room){
+    $('[data-id='+room.id+']').remove()
+  }
+  socket.on('connect', function (user) {
+      socket.emit('join');
+  });
+  socket.on('rooms.update', function(data){
+    rsp = JSON.parse(data);
+    switch(rsp.action) {
+    case "new":
+        new_room(rsp.room)
+        break;
+    case "update":
+        update_room(rsp.room)
+        break;
+    case "del":
+        del_room(rsp.room)
+        break;
+    default:
+
+    }
+    //$('#rooms').append($('<div />').text(room));
+  });
+
+</script>
