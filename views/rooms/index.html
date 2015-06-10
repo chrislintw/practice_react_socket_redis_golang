@@ -1,16 +1,8 @@
-<h1>Hi</h1>
-<div class="container" >
-<div id="rooms">
-</div>
-</div>
-<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+<script src="/assets/javascripts/rooms/feed-socketio.js"></script>
+<script type="text/jsx" src="/assets/javascripts/rooms/app.js"></script>
+<div class="container" id="main"></div>
 <script>
-  var socket = new io.connect('http://10.50.2.78:8080', {
-    'reconnection': true,
-    'reconnectionDelay': 1000,
-    'reconnectionDelayMax' : 5000,
-    'reconnectionAttempts': 5
-  });
+/*
   var new_room = function(room){
     div = $('<div />').attr({
       "data-id": room.id
@@ -46,5 +38,5 @@
     }
     //$('#rooms').append($('<div />').text(room));
   });
-
+*/
 </script>
