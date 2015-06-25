@@ -1,5 +1,5 @@
 feed = (function () {
-  var socket = new io.connect('http://10.50.2.78:8080', {
+  var socket = new io.connect('http://localhost:8080', {
       'reconnection': true,
       'reconnectionDelay': 1000,
       'reconnectionDelayMax' : 5000,
@@ -12,7 +12,7 @@ feed = (function () {
       });
     },
     onChange: function(callback) {
-      socket.on('rooms.update', callback);
+      socket.on('lobby', callback);
     },
     new: function(room) {
         //socket.emit('join', symbols);

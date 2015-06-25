@@ -1,8 +1,10 @@
-var EntryButton = React.createClass({
+var CreateRoom = React.createClass({
   render: function(){
     return (
-      <div>
-
+      <div className="col-xs-12 ">
+        <div className="pull-right">
+          <a href="/rooms/new" className="btn btn-success">New</a>
+        </div>
       </div>
     )
   }
@@ -56,8 +58,9 @@ var HomePage = React.createClass({
   render: function () {
     return (
       <div className="row row-offcanvas row-offcanvas-right">
+        <CreateRoom />
         <div className="col-xs-12 col-sm-9">
-          <h1>HI </h1>
+
           <RoomsBox rooms={this.state.rooms} />
         </div>
       </div>

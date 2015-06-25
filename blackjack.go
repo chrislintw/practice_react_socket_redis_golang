@@ -1,11 +1,12 @@
 package main
 
 import (
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
 	"github.com/fzzy/radix/redis"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
+	"net/http"
 	//"github.com/martini-contrib/staticbin"
 	"math/rand"
 	"os"
@@ -16,7 +17,7 @@ import (
 
 var redisClnet *redis.Client
 
-// Object
+// Object model
 type Poker struct {
 	Cards [][2]string
 	count int
@@ -34,12 +35,20 @@ type Dealer struct {
 	User
 }
 
+type Room struct {
+	Id       int
+	Title    string
+	Limit    int
+	People   int
+	Password string
+}
+
 // init
 func init() {
 	redisClnet = initRedis()
 }
 
-// main
+// main => route
 func main() {
 	m := martini.Classic()
 	m.Use(martini.Static("assets"))
@@ -51,17 +60,17 @@ func main() {
 	m.Get("/", WebHome)
 
 	m.Group("/rooms", func(r martini.Router) {
-		//r.Get("/", IndexRooms)
+		r.Get("/", WebHome)
 		//r.Get("/:id", GetRoom)
 		r.Get("/new", NewRoom)
-		//r.Post("/", CreateRoom)
+		r.Post("", CreateRoom)
 		//r.Put("/update/:id", UpdateRoom)
 		//r.Delete("/delete/:id", DeleteRoom)
 	})
 	m.Run()
 }
 
-// Web
+// Web = controller
 func WebHome(r render.Render) {
 	//rooms := redisClnet.
 	r.HTML(200, "rooms/index", nil)
@@ -70,11 +79,17 @@ func NewRoom(r render.Render) {
 
 	r.HTML(200, "rooms/new", nil)
 }
-func CreateRoom(r render.Render) {
-
+func CreateRoom(r render.Render, f *http.Request) {
+	room := Room{Id: 123, Title: f.FormValue("title"), Limit: 6, People: 1, Password: ""}
+	room_data, err := json.Marshal(room)
+	errHndlr(err)
+	res := redisClnet.Cmd("hset", "blackjack.room", room.Id, room_data)
+	errHndlr(res.Err)
+	r.JSON(200, map[string]interface{}{"status": "success", "room_id": room.Id})
 }
 func GetRoom(r render.Render) {
 
+	r.HTML(200, "rooms/new", nil)
 }
 
 // Game in progress

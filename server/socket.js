@@ -14,19 +14,18 @@ http.listen(port, function() {
 io.on('connection', function(socket){
   socket.on('join', function () {
     console.info('New client connected (socket=' + socket.id + ').');
-    redis.subscribe(['rooms.update'], function (err, count) {
+    redis.subscribe(['lobby'], function (err, count) {
     });
 
-    // get messages send by ChatController
     redis.on("message", function (channel, message) {
       console.log('Receive message %s from system in channel %s', message, channel);
       socket.emit(channel, message);
     });
-    socket.on('rooms.update', function (message) {
+    /*socket.on('rooms.update', function (message) {
       console.log('Receive message ' + message.msg + ' from user in channel chat.message');
       pub.publish('rooms.update', message);
       //io.sockets.emit('chat.message', JSON.stringify(message));
-    });
+    });*/
     socket.on('disconnect', function() {
       console.info('Client gone (socket=' + socket.id + ').');
     });
