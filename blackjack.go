@@ -16,6 +16,7 @@ import (
 )
 
 var redisClnet *redis.Client
+var roomCount int
 
 // Object model
 type Poker struct {
@@ -61,7 +62,8 @@ func main() {
 
 	m.Group("/rooms", func(r martini.Router) {
 		r.Get("/", WebHome)
-		//r.Get("/:id", GetRoom)
+		r.Get(".json", RoomsJson)
+		r.Get("/:id", GetRoom)
 		r.Get("/new", NewRoom)
 		r.Post("", CreateRoom)
 		//r.Put("/update/:id", UpdateRoom)
@@ -75,21 +77,33 @@ func WebHome(r render.Render) {
 	//rooms := redisClnet.
 	r.HTML(200, "rooms/index", nil)
 }
+func RoomsJson(r render.Render, f *http.Request) {
+	myhash, err := redisClnet.Cmd("hgetall", "blackjack.room").Hash()
+	errHndlr(err)
+	r.JSON(200, myhash)
+}
 func NewRoom(r render.Render) {
 
 	r.HTML(200, "rooms/new", nil)
 }
 func CreateRoom(r render.Render, f *http.Request) {
-	room := Room{Id: 123, Title: f.FormValue("title"), Limit: 6, People: 1, Password: ""}
+	roomCount += 1
+	room := Room{Id: roomCount, Title: f.FormValue("title"), Limit: 6, People: 1, Password: ""}
 	room_data, err := json.Marshal(room)
 	errHndlr(err)
 	res := redisClnet.Cmd("hset", "blackjack.room", room.Id, room_data)
 	errHndlr(res.Err)
+	redis_data := map[string]interface{}{"action": "roominfo", "room": room}
+	room_data, err = json.Marshal(redis_data)
+	errHndlr(err)
+
+	res = redisClnet.Cmd("publish", "lobby", room_data)
+
 	r.JSON(200, map[string]interface{}{"status": "success", "room_id": room.Id})
 }
 func GetRoom(r render.Render) {
 
-	r.HTML(200, "rooms/new", nil)
+	r.HTML(200, "rooms/show", nil)
 }
 
 // Game in progress

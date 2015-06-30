@@ -13,7 +13,6 @@ http.listen(port, function() {
 });
 io.on('connection', function(socket){
   socket.on('join', function () {
-    console.info('New client connected (socket=' + socket.id + ').');
     redis.subscribe(['lobby'], function (err, count) {
     });
 

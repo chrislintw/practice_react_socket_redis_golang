@@ -6,7 +6,15 @@ feed = (function () {
       'reconnectionAttempts': 5
       });
   return {
-    init: function(){
+    init: function(callback){
+      $.ajax({
+        url:'/rooms.json',
+        type:'GET',
+      }).done(function(rooms){
+        $.each(rooms,function(i,room){
+          callback(room)
+        })
+      });
       socket.on('connect', function (user) {
         socket.emit('join');
       });
