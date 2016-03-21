@@ -63,8 +63,8 @@ func main() {
 	m.Group("/rooms", func(r martini.Router) {
 		r.Get("/", WebHome)
 		r.Get(".json", RoomsJson)
-		r.Get("/:id", GetRoom)
 		r.Get("/new", NewRoom)
+		r.Get("/:id", GetRoom)
 		r.Post("", CreateRoom)
 		//r.Put("/update/:id", UpdateRoom)
 		//r.Delete("/delete/:id", DeleteRoom)
